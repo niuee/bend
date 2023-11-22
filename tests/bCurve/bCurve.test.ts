@@ -466,6 +466,23 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
         
+        test("Align Bezier Curve with the X axis", ()=>{
+            const testControlPoints = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
+            const alignRefBCurve = new bCurve(testControlPoints);
+            const testRes = alignRefBCurve.getControlPointsAlignedWithXAxis();
+            expect(testRes.length).toBe(3);
+            expect(testRes[testRes.length - 1].y).toBeCloseTo(0);
+            const alignTestBCurve = new bCurve(testRes);
+            for(let tVal = 0; tVal <= 1; tVal += 0.01){
+                const refPosition = alignRefBCurve.compute(tVal);
+                const testPosition = alignTestBCurve.compute(tVal);
+                const refDist = PointCal.distanceBetweenPoints(alignRefBCurve.getControlPoints()[0], refPosition);
+                const testDist = PointCal.distanceBetweenPoints(alignTestBCurve.getControlPoints()[0], testPosition);
+                expect(testDist).toBeCloseTo(refDist);
+            }
+
+        })
+        
 
     })
 
