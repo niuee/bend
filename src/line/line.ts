@@ -26,6 +26,13 @@ export class Line {
     projectPoint(point: Point){
         return projectPointOntoLine(point, this.getStartPoint(), this.getEndPoint());
     }
+    
+    getTranslationRotationToAlginXAxis(){
+        const translation = PointCal.subVector({x: 0, y: 0}, this.startPoint);
+        const rotationAngle = PointCal.angleFromA2B(PointCal.subVector(this.endPoint, this.startPoint), {x: 1, y: 0});
+
+        return {translation, rotationAngle};
+    }
 }
 
 export function getLineIntersection(startPoint: Point, endPoint: Point, startPoint2: Point, endPoint2: Point):{

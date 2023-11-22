@@ -9,7 +9,13 @@ describe("Basic Line Operation", ()=>{
         expect(testRes.intersects).toBe(true);
         expect(testRes.intersection?.x).toBeCloseTo(34.821);
         expect(testRes.intersection?.y).toBeCloseTo(144.286);
+    });
 
+    test("Get the translation and rotation angle needed to align Line with the X axis", ()=>{
+        const line = new Line({x: 0, y: 0}, {x: 1, y: 1});
+        const testRes = line.getTranslationRotationToAlginXAxis();
+        expect(testRes.translation.x).toBeCloseTo(0);
+        expect(testRes.rotationAngle).toBeCloseTo(-Math.PI / 4);
     });
 });
 
