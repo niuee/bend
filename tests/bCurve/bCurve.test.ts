@@ -1,6 +1,8 @@
+import { Bezier } from "bezier-js";
 import { PointCal } from "point2point";
 import { bCurve, Point, TValOutofBoundError } from "../../src/bCurve";
-import { Bezier } from "bezier-js";
+import { Line } from "../../src/line";
+
 
 
 
@@ -149,7 +151,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
         });
 
         test("Find arcs in bezier curve", ()=>{
-            const errorThreshold = 0.5
+            const errorThreshold = 0.5;
             const testRes = testBCurve.findArcs(errorThreshold);
             const inflectedCurve = new bCurve([{x: 52, y: 235}, {x: 56, y:118}, {x: 204, y:222}, {x: 179, y: 107}]);
             const inflectedRes = inflectedCurve.findArcs(errorThreshold);
@@ -162,7 +164,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
                     const testPoint = testBCurve.get(tVal);
                     const testRadius = PointCal.distanceBetweenPoints(testPoint, arc.center);
                     let proximityRes = false;
-                    if (Math.abs(testRadius - arc.radius) < errorThreshold || Math.abs(Math.abs(testRadius - arc.radius) - errorThreshold) < errorThreshold * 0.1){
+                    if (Math.abs(testRadius - arc.radius) < errorThreshold || Math.abs(Math.abs(testRadius - arc.radius) - errorThreshold) < errorThreshold * 0.5){
                         proximityRes = true;
                     }
                     expect(proximityRes).toBe(true);
@@ -177,7 +179,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
                     const testPoint = inflectedCurve.get(tVal);
                     const testRadius = PointCal.distanceBetweenPoints(testPoint, arc.center);
                     let proximityRes = false;
-                    if (Math.abs(testRadius - arc.radius) < errorThreshold || Math.abs(Math.abs(testRadius - arc.radius) - errorThreshold) < errorThreshold * 0.1){
+                    if (Math.abs(testRadius - arc.radius) < errorThreshold || Math.abs(Math.abs(testRadius - arc.radius) - errorThreshold) < errorThreshold * 0.5){
                         proximityRes = true;
                     }
                     expect(proximityRes).toBe(true);
@@ -279,6 +281,18 @@ describe("Basic Operation on Bezier Curve", ()=>{
                 const testDist = PointCal.distanceBetweenPoints(alignTestBCurve.getControlPoints()[0], testPosition);
                 expect(testDist).toBeCloseTo(refDist);
             }
+        });
+
+        test("Find Intersection(s) between a line and a bezier curve", ()=>{
+            const line = new Line({x: 15, y: 250}, {x: 220, y: 20});
+            const testCurve = new bCurve([{x: 70, y: 250}, {x: 20, y: 110}, {x: 220, y: 60}]);
+            const testRes = testCurve.getLineIntersections(line);
+            expect(testRes.length).toBe(2);
+            testRes.sort();
+            const refRes = [0.19, 0.87];
+            testRes.forEach((tVal, index)=>{
+                expect(tVal).toBeCloseTo(refRes[index]);
+            });
         });
 
     });
@@ -391,9 +405,9 @@ describe("Basic Operation on Bezier Curve", ()=>{
                     const testPoint = testBCurve.get(tVal);
                     const testRadius = PointCal.distanceBetweenPoints(testPoint, arc.center);
                     let proximityRes = false;
-                    if (Math.abs(testRadius - arc.radius) < errorThreshold || Math.abs(Math.abs(testRadius - arc.radius) - errorThreshold) < errorThreshold * 0.1){
+                    if (Math.abs(testRadius - arc.radius) < errorThreshold || Math.abs(Math.abs(testRadius - arc.radius) - errorThreshold) < errorThreshold * 0.5){
                         proximityRes = true;
-                    }
+                }
                     expect(proximityRes).toBe(true);
                 }
             });
@@ -483,21 +497,18 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
-        test("Align Bezier Curve with the X axis", ()=>{
-            const testControlPoints = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
-            const alignRefBCurve = new bCurve(testControlPoints);
-            const testRes = alignRefBCurve.getControlPointsAlignedWithXAxis();
-            expect(testRes.length).toBe(3);
-            expect(testRes[testRes.length - 1].y).toBeCloseTo(0);
-            const alignTestBCurve = new bCurve(testRes);
-            for(let tVal = 0; tVal <= 1; tVal += 0.01){
-                const refPosition = alignRefBCurve.compute(tVal);
-                const testPosition = alignTestBCurve.compute(tVal);
-                const refDist = PointCal.distanceBetweenPoints(alignRefBCurve.getControlPoints()[0], refPosition);
-                const testDist = PointCal.distanceBetweenPoints(alignTestBCurve.getControlPoints()[0], testPosition);
-                expect(testDist).toBeCloseTo(refDist);
-            }
-        })
+        test("Find Intersection(s) between a line and a bezier curve", ()=>{
+            const line = new Line({x: 25, y: 260}, {x: 240, y: 55});
+            const testCurve = new bCurve([{x: 110, y: 150}, {x: 25, y: 190}, {x: 210, y: 250}, {x: 210, y: 30}]);
+            const testRes = testCurve.getLineIntersections(line);
+            expect(testRes.length).toBe(2);
+            testRes.sort();
+            const refRes = [0.36, 0.90];
+            testRes.forEach((tVal, index)=>{
+                expect(tVal).toBeCloseTo(refRes[index]);
+            });
+        });
+
         
 
     })

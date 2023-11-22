@@ -1,4 +1,5 @@
-import {PointCal, point} from "point2point";
+import { PointCal } from "point2point";
+import { Line } from "../line";
 
 const T = [
     -0.0640568928626056260850430826247450385909,
@@ -458,6 +459,35 @@ export class bCurve{
 
         }
         return res;        
+    }
+
+    translateRotateControlPoints(translation: Point, rotationAngle: number){
+        // rotation is in radians
+        const res: Point[] = [];
+        for(let index = 0; index < this.controlPoints.length; index++){
+            res.push(PointCal.rotatePoint(PointCal.addVector(this.controlPoints[index], translation), rotationAngle));
+        }
+        return res;
+    }
+
+    getLineIntersections(line: Line): number[]{
+        const translationRotation = line.getTranslationRotationToAlginXAxis();
+        const res: number[] = [];
+        const alignedControlPoints = this.translateRotateControlPoints(translationRotation.translation, translationRotation.rotationAngle);
+        const coefficients = this.getCoefficientOfTTermsWithControlPoints(alignedControlPoints);
+        let yCoefficients = [0, 0, 0, 0];
+        coefficients.forEach((coefficient, index)=>{
+            yCoefficients[3 - index] = coefficient.y;
+        });
+
+        const yRoots = this.solveCubic(yCoefficients[0], yCoefficients[1], yCoefficients[2], yCoefficients[3]);
+        yRoots.forEach((root)=>{
+            if(root >= 0 && root <= 1){
+                res.push(root);
+            }
+        });
+
+        return res;
     }
 
     // A helper function to filter for values in the [0,1] interval:
