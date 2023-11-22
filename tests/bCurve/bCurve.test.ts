@@ -295,6 +295,20 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
+        test("Find Intersections with other bezier curve", ()=>{
+            const controlPoints1 = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500,500), y: getRandom(-500, 500)}];
+            const controlPoints2 = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
+            const curve1 = new bCurve(controlPoints1);
+            const curve2 = new bCurve(controlPoints2);
+            const testRes = curve1.getCurveIntersections(curve2);
+            testRes.forEach((intersection)=>{
+                const testPoint1 = curve1.get(intersection.selfT);
+                const testPoint2 = curve2.get(intersection.otherT);
+                expect(testPoint1.x).toBeCloseTo(testPoint2.x);
+                expect(testPoint1.y).toBeCloseTo(testPoint2.y);
+            });
+        });
+
     });
 
     describe("Cubic Bezier Curve (4 Control Points)", ()=>{
@@ -509,7 +523,18 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
-        
+        test("Find self intersections", ()=>{
+            const controlPoints = [{x: 176, y: 135}, {x: 45, y:235}, {x: 220, y: 235}, {x: 98, y: 127}];
+            const testCurve = new bCurve(controlPoints);
+            const testRes = testCurve.getSelfIntersections();
+            expect(testRes.length).toBe(1);
+            testRes.forEach((intersection)=>{
+                const testPoint1 = testCurve.get(intersection.selfT);
+                const testPoint2 = testCurve.get(intersection.otherT);
+                expect(testPoint1.x).toBeCloseTo(testPoint2.x);
+                expect(testPoint1.y).toBeCloseTo(testPoint2.y);
+            });
+        });
 
     })
 

@@ -490,9 +490,120 @@ export class bCurve{
         return res;
     }
 
+    getSelfIntersections(): {selfT: number, otherT: number}[]{
+        const [subCurveControlPoints1, subCurveControlPoints2] = this.split(0.5);
+        const subCurve1 = new bCurve(subCurveControlPoints1);
+        const subCurve2 = new bCurve(subCurveControlPoints2);
+        let initialRes = this.getIntersectionsBetweenCurves(subCurve1, subCurve2);
+        initialRes.forEach((intersection)=>{
+            intersection.selfT = intersection.selfT * 0.5;
+            intersection.otherT = intersection.otherT * 0.5 + 0.5;
+        });
+        initialRes.shift();
+        return initialRes;
+    }
+
+    getIntersectionsBetweenCurves(curve: bCurve, curve2: bCurve): {selfT: number, otherT: number}[]{
+        const threshold = 0.0001;
+        let pairs: {curve1: {curve: bCurve, startTVal: number, endTVal: number}, curve2: {curve: bCurve, startTVal: number, endTVal: number}}[] = [{curve1: {curve: curve, startTVal: 0, endTVal: 1}, curve2: {curve: curve2, startTVal: 0, endTVal: 1}}];
+        const finalRes = [];
+        while (pairs.length > 0){
+            let curLength = pairs.length;
+            for(let index = 0; index < curLength; index++){
+                let pair = pairs.shift();
+                if (pair == undefined){
+                    break;
+                }
+                let aabb1 = pair.curve1.curve.getAABB();
+                let aabb2 = pair.curve2.curve.getAABB();
+                let intersects = this.AABBIntersects(aabb1, aabb2);
+                if(pair.curve1.curve.fullLength() < threshold && pair.curve2.curve.fullLength() < threshold){
+                    finalRes.push({intersection: pair.curve1.curve.get(0.5), tVal1: (pair.curve1.startTVal + pair.curve1.endTVal) * 0.5, tVal2: (pair.curve2.startTVal + pair.curve2.endTVal) * 0.5});
+                    continue;
+                }
+                if (intersects){
+                    let [subCurveControlPoints1, subCurveControlPoints2] = pair.curve1.curve.split(0.5);
+                    let [subCurveControlPoints3, subCurveControlPoints4] = pair.curve2.curve.split(0.5);
+                    pairs.push({
+                        curve1: {
+                            curve: new bCurve(subCurveControlPoints1), 
+                            startTVal: pair.curve1.startTVal, 
+                            endTVal: pair.curve1.startTVal + (pair.curve1.endTVal - pair.curve1.startTVal) * 0.5
+                    }, curve2: {
+                            curve: new bCurve(subCurveControlPoints3),
+                            startTVal: pair.curve2.startTVal,
+                            endTVal: pair.curve2.startTVal + (pair.curve2.endTVal - pair.curve2.startTVal) * 0.5
+                    }});
+
+                    pairs.push({
+                        curve1: {
+                            curve: new bCurve(subCurveControlPoints1), 
+                            startTVal: pair.curve1.startTVal, 
+                            endTVal: pair.curve1.startTVal + (pair.curve1.endTVal - pair.curve1.startTVal) * 0.5
+                    }, curve2: {
+                            curve: new bCurve(subCurveControlPoints4),
+                            startTVal: pair.curve2.startTVal + (pair.curve2.endTVal - pair.curve2.startTVal) * 0.5,
+                            endTVal: pair.curve2.endTVal
+                    }});
+
+                    pairs.push({
+                        curve1: {
+                            curve: new bCurve(subCurveControlPoints2), 
+                            startTVal: pair.curve1.startTVal + (pair.curve1.endTVal - pair.curve1.startTVal) * 0.5 ,
+                            endTVal: pair.curve1.endTVal 
+                    }, curve2: {
+                            curve: new bCurve(subCurveControlPoints3),
+                            startTVal: pair.curve2.startTVal,
+                            endTVal: pair.curve2.startTVal + (pair.curve2.endTVal - pair.curve2.startTVal) * 0.5
+                    }});
+
+                    pairs.push({
+                        curve1: {
+                            curve: new bCurve(subCurveControlPoints2), 
+                            startTVal: pair.curve1.startTVal + (pair.curve1.endTVal - pair.curve1.startTVal) * 0.5 ,
+                            endTVal: pair.curve1.endTVal 
+                    }, curve2: {
+                            curve: new bCurve(subCurveControlPoints4),
+                            startTVal: pair.curve2.startTVal + (pair.curve2.endTVal - pair.curve2.startTVal) * 0.5,
+                            endTVal: pair.curve2.endTVal
+                    }});
+                }
+
+            }
+        }
+
+        const tVals: {selfT: number, otherT: number}[] = [];
+        const tVal1s: number[] = [];
+        finalRes.forEach((intersections)=>{
+            let within = false;
+            for(let index = 0; index < tVal1s.length; index++){
+                if (this.approximately(intersections.tVal1, tVal1s[index], 0.000005)){
+                    within = true;
+                    break;
+                }
+            }
+            if (!within){
+                tVal1s.push(intersections.tVal1);
+                tVals.push({selfT: intersections.tVal1, otherT: intersections.tVal2});
+            }
+        });
+        return tVals;
+    }
+
+    getCurveIntersections(curve: bCurve): {selfT: number, otherT: number}[]{
+        return this.getIntersectionsBetweenCurves(this, curve);
+    }
+
+    AABBIntersects(AABB1: {min: Point, max: Point}, AABB2: {min: Point, max: Point}): boolean{
+        if ((AABB1.min.x <= AABB2.max.x && AABB2.min.x <= AABB1.max.x) && (AABB1.min.y <= AABB2.max.y && AABB2.min.y <= AABB1.max.y)){
+            return true;
+        }
+        return false;
+    }
+
     // A helper function to filter for values in the [0,1] interval:
     accept(t: number) {
-        return 0<=t && t <=1;
+        return 0 <= t && t <=1;
     }
   
     // A real-cuberoots-only function:
