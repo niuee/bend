@@ -396,7 +396,6 @@ export class bCurve{
 
     getControlPointsAlignedWithXAxis(){
         const alignedAxis = PointCal.unitVectorFromA2B(this.controlPoints[0], this.controlPoints[this.controlPoints.length - 1]);
-        
         const angle = PointCal.angleFromA2B({x:1, y:0}, alignedAxis);
         const startingPoint = this.controlPoints[0];
         const res = [{x: 0, y: 0}];
@@ -416,8 +415,8 @@ export class bCurve{
     getExtrema():{x: number[], y: number[]}{
         const res: {x: number[], y: number[]} = {x: [], y: []};
         const derivativeCoefficients = this.getDerivativeCoefficients();
-        const xCoefficients = [0, 0, 0, 0];
-        const yCoefficients = [0, 0, 0, 0];
+        let xCoefficients = [0, 0, 0, 0];
+        let yCoefficients = [0, 0, 0, 0];
         derivativeCoefficients.forEach((coefficient, index)=>{
             xCoefficients[3 - index] = coefficient.x;
             yCoefficients[3 - index] = coefficient.y;
@@ -435,8 +434,10 @@ export class bCurve{
                 res.y.push(root);
             }
         });
-
+        
         if(derivativeCoefficients.length >= 3){
+            xCoefficients = [0, 0, 0, 0];
+            yCoefficients = [0, 0, 0, 0];
             const secondDerivativeCoefficients = this.getCoefficientOfTTermsWithControlPoints(this.getDerivativeControlPoints(this.dControlPoints));
             secondDerivativeCoefficients.forEach((coefficient, index)=>{
                 xCoefficients[3 - index] = coefficient.x;
@@ -539,7 +540,29 @@ export class bCurve{
         v1 = this.cuberoot2(sd + q2);
         root1 = u1 - v1 - a/3;
         return [root1].filter(this.accept);
-}
+    }
+
+    public getAABB():{min: Point, max: Point}{
+        const extrema = this.getExtrema();
+        const tVals = [0, 1];
+        let min: Point = {x: Number.MAX_VALUE, y: Number.MAX_VALUE};
+        let max: Point = {x: -Number.MAX_VALUE, y: -Number.MAX_VALUE};
+        extrema.x.forEach((tVal)=>{
+            tVals.push(tVal);
+        });
+        extrema.y.forEach((tVal)=>{
+            tVals.push(tVal);
+        });
+        tVals.forEach((tVal)=>{
+            const curPoint = this.get(tVal);
+            min.x = Math.min(min.x, curPoint.x);
+            min.y = Math.min(min.y, curPoint.y);
+            max.x = Math.max(max.x, curPoint.x);
+            max.y = Math.max(max.y, curPoint.y);
+        });
+
+        return {min:min, max:max};
+    }
 
 }
 

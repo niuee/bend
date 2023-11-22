@@ -228,18 +228,23 @@ describe("Basic Operation on Bezier Curve", ()=>{
             const expectRes = refBCurve.extrema();
             expect(testRes.x.length).toBe(expectRes.x.length);
             expect(testRes.y.length).toBe(expectRes.y.length);
-            expectRes.x.forEach((tVal)=>{
-                const refPoint = refBCurve.get(tVal);
-                const testPoint = testBCurve.get(tVal);
-                expect(testPoint.x).toBeCloseTo(refPoint.x);
-                expect(testPoint.y).toBeCloseTo(refPoint.y);
+            testRes.x.sort();
+            testRes.y.sort();
+            expectRes.x.sort().forEach((x, index)=>{
+                expect(testRes.x[index]).toBeCloseTo(x);
             });
-            expectRes.y.forEach((tVal)=>{
-                const refPoint = refBCurve.get(tVal);
-                const testPoint = testBCurve.get(tVal);
-                expect(testPoint.x).toBeCloseTo(refPoint.x);
-                expect(testPoint.y).toBeCloseTo(refPoint.y);
+            expectRes.y.sort().forEach((y, index)=>{
+                expect(testRes.y[index]).toBeCloseTo(y);
             });
+        });
+
+        test("Find Axis Aligned Bounding Box of the bezier curve", ()=>{
+            const boundingBox = testBCurve.getAABB();
+            const refBoundingBox = refBCurve.bbox();
+            expect(boundingBox.min.x).toBeCloseTo(refBoundingBox.x.min);
+            expect(boundingBox.min.y).toBeCloseTo(refBoundingBox.y.min);
+            expect(boundingBox.max.x).toBeCloseTo(refBoundingBox.x.max);
+            expect(boundingBox.max.y).toBeCloseTo(refBoundingBox.y.max);
         });
 
         test("Align Bezier Curve with the X axis", ()=>{
@@ -451,17 +456,13 @@ describe("Basic Operation on Bezier Curve", ()=>{
             const expectRes = refBCurve.extrema();
             expect(testRes.x.length).toBe(expectRes.x.length);
             expect(testRes.y.length).toBe(expectRes.y.length);
-            expectRes.x.forEach((tVal)=>{
-                const refPoint = refBCurve.get(tVal);
-                const testPoint = testBCurve.get(tVal);
-                expect(testPoint.x).toBeCloseTo(refPoint.x);
-                expect(testPoint.y).toBeCloseTo(refPoint.y);
+            testRes.x.sort();
+            testRes.y.sort();
+            expectRes.x.sort().forEach((x, index)=>{
+                expect(testRes.x[index]).toBeCloseTo(x);
             });
-            expectRes.y.forEach((tVal)=>{
-                const refPoint = refBCurve.get(tVal);
-                const testPoint = testBCurve.get(tVal);
-                expect(testPoint.x).toBeCloseTo(refPoint.x);
-                expect(testPoint.y).toBeCloseTo(refPoint.y);
+            expectRes.y.sort().forEach((y, index)=>{
+                expect(testRes.y[index]).toBeCloseTo(y);
             });
         });
         
