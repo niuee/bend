@@ -12,9 +12,10 @@ describe("Basic Line Operation", ()=>{
     });
 
     test("Get the translation and rotation angle needed to align Line with the X axis", ()=>{
-        const line = new Line({x: 0, y: 0}, {x: 1, y: 1});
+        const line = new Line({x: 2, y: 2}, {x: 3, y: 3});
         const testRes = line.getTranslationRotationToAlginXAxis();
-        expect(testRes.translation.x).toBeCloseTo(0);
+        expect(testRes.translation.x).toBeCloseTo(-2);
+        expect(testRes.translation.y).toBeCloseTo(-2);
         expect(testRes.rotationAngle).toBeCloseTo(-Math.PI / 4);
     });
 });
