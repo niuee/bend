@@ -146,12 +146,13 @@ export class bCurve{
         const stepSpan = 1 / steps;
         const res: Point[] = [];
         let tVal = 0;
-        while (tVal <= 1){
-            res.push(this.get(tVal));
+        res.push(this.get(tVal));
+        for(let index = 0; index < steps; index += 1){
             tVal += stepSpan;
-            if (tVal > 1 && tVal - stepSpan < 1){
-                res.push(this.get(1));
+            if((tVal > 1 && tVal - stepSpan < 1) || index == steps - 1){
+                tVal = 1;
             }
+            res.push(this.get(tVal));
         }
         return res
     }
