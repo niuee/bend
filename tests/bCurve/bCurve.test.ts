@@ -329,11 +329,16 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
-        // test("Project Points onto bezier curve", ()=>{
-        //     const testMousePosition = {x: getRandom(-500, 500), y: getRandom(-500, 500)};
-        //     const testRes = testBCurve.getProjection(testMousePosition);
-            
-        // });
+        test("Project Points onto bezier curve", ()=>{
+            const testControlPoints = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
+            const testCurve = new bCurve(testControlPoints);
+            const testMousePosition = {x: getRandom(-500, 500), y: getRandom(-500, 500)};
+            const testRes = testCurve.getProjection(testMousePosition);
+            const LUT = testCurve.getLUT();
+            LUT.forEach((point)=>{
+                expect(PointCal.distanceBetweenPoints(testRes.projection, testMousePosition)).toBeLessThanOrEqual(PointCal.distanceBetweenPoints(point, testMousePosition));
+            });
+        });
 
     });
 
@@ -505,7 +510,6 @@ describe("Basic Operation on Bezier Curve", ()=>{
             expect(testRes[2].y).toBeCloseTo(secondOrderTerm.y);
         });
 
-
         test("Align Bezier Curve with the X axis", ()=>{
             const testControlPoints = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
             const alignRefBCurve = new bCurve(testControlPoints);
@@ -573,6 +577,17 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
+        test("Project Points onto bezier curve", ()=>{
+            const testControlPoints = getRandomCubicControlPoints(-500, 500);
+            const testCurve = new bCurve(testControlPoints);
+            const testMousePosition = getRandomPoint(-500, 500);
+            const testRes = testCurve.getProjection(testMousePosition);
+            const LUT = testCurve.getLUT();
+            LUT.forEach((point)=>{
+                expect(PointCal.distanceBetweenPoints(testRes.projection, testMousePosition)).toBeLessThanOrEqual(PointCal.distanceBetweenPoints(point, testMousePosition));
+            });
+        });
+
     })
 
 });
@@ -586,6 +601,29 @@ function getRandomInt(min: number, max: number) {
 
 function getRandom(min: number, max: number){
     return Math.random() * (max - min) + min;
+}
+
+function getRandomPoint(min: number, max: number): Point{
+    return {x: getRandom(min, max), y: getRandom(min, max)};
+}
+
+function getRandomQuadraticControlPoints(min: number, max: number): Point[]{
+    return getRandomControlPoints(min, max, 3);
+}
+
+function getRandomCubicControlPoints(min: number, max: number): Point[]{
+    return getRandomControlPoints(min, max, 4);
+}
+
+function getRandomControlPoints(min: number, max: number, num?: number): Point[]{
+    if (num == undefined){
+        num = 1;
+    }
+    const res: Point[] = [];
+    for(let index = 0; index < num; index++){
+        res.push({x: getRandom(min, max), y: getRandom(min, max)});
+    }
+    return res;
 }
 
 function cuberoot(x: number) {

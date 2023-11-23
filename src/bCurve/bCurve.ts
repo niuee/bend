@@ -157,6 +157,24 @@ export class bCurve{
         return res
     }
 
+    public getLUTWithTVal(steps?: number){
+        if (steps == undefined){
+            steps = 100;
+        }
+        const stepSpan = 1 / steps;
+        const res: {point: Point, tVal: number}[] = [];
+        let tVal = 0;
+        res.push({point: this.get(tVal), tVal: tVal});
+        for(let index = 0; index < steps; index += 1){
+            tVal += stepSpan;
+            if((tVal > 1 && tVal - stepSpan < 1) || index == steps - 1){
+                tVal = 1;
+            }
+            res.push({point: this.get(tVal), tVal: tVal});
+        }
+        return res
+    }
+
     public fullLength(): number{
         return this.lengthAtT(1);
     }
@@ -216,6 +234,66 @@ export class bCurve{
         let newControlPoint7 = this.controlPoints[3];
 
         return [[newControlPoint1, newControlPoint2, newControlPoint3, newControlPoint4], [newControlPoint4, newControlPoint5, newControlPoint6, newControlPoint7]];
+    }
+
+    getProjection(point: Point){
+        const threshold = 0.00001;
+        let distance = Number.MAX_VALUE;
+        let preliminaryProjectionTVal: number = 0;
+        let preliminaryProjectionPoint: Point = this.get(0);
+        let preliminaryProjectionIndex: number = 0;
+        const LUT = this.getLUTWithTVal(500);
+        LUT.forEach((curvePoint, index)=>{
+            const curDistance = PointCal.distanceBetweenPoints(curvePoint.point, point);
+            if(curDistance < distance){
+                distance = curDistance;
+                preliminaryProjectionPoint = {...curvePoint.point};
+                preliminaryProjectionTVal = curvePoint.tVal;
+                preliminaryProjectionIndex = index;
+            }
+        });
+        // console.log(preliminaryProjectionIndex, preliminaryProjectionPoint, preliminaryProjectionTVal);
+        let low = LUT[preliminaryProjectionIndex].tVal;
+        let high = LUT[preliminaryProjectionIndex].tVal;
+        if (preliminaryProjectionIndex < LUT.length - 1){
+            high = LUT[preliminaryProjectionIndex + 1].tVal;
+        }
+        if (preliminaryProjectionIndex > 0){
+            low = LUT[preliminaryProjectionIndex - 1].tVal;
+        }
+        while(low < high && high - low > threshold){
+            let mid = low + (high - low) / 2;
+            let halfSpan = mid - low;
+            let lowMidMid = mid + halfSpan / 2;
+            let highMidMid = mid + halfSpan / 2;
+            let prevDist = distance;
+
+            
+            if(lowMidMid <= 1 && lowMidMid >= 0){
+                let curDist = PointCal.distanceBetweenPoints(this.get(lowMidMid), point);
+                if (curDist < distance){
+                    distance = curDist;
+                    preliminaryProjectionPoint = this.get(lowMidMid);
+                    preliminaryProjectionTVal = lowMidMid;
+                    high = lowMidMid + halfSpan / 2;
+                    low = lowMidMid - halfSpan / 2;
+                }
+            }
+            if(highMidMid <= 1 && highMidMid >= 0){
+                let curDist = PointCal.distanceBetweenPoints(this.get(highMidMid), point);
+                if (curDist < distance){
+                    distance = curDist;
+                    preliminaryProjectionPoint = this.get(highMidMid);
+                    preliminaryProjectionTVal = highMidMid;
+                    high = highMidMid + halfSpan / 2;
+                    low = highMidMid - halfSpan / 2;
+                }
+            }
+            if (prevDist == distance){
+                break;
+            }
+        }
+        return {projection: preliminaryProjectionPoint, tVal: preliminaryProjectionTVal};
     }
 
     public findArcs(errorThreshold: number){
