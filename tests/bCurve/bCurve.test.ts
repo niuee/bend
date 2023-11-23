@@ -295,6 +295,15 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
+        test("Find Intersection(s) between a line and a bezier curve when intersection is not within the line segment", ()=>{
+            const line = new Line({x: 15, y: 250}, {x: 220, y: 20});
+            const lineUnitVector = PointCal.unitVectorFromA2B(line.getStartPoint(), line.getEndPoint());
+            const unitLine = new Line(line.getStartPoint(), PointCal.addVector(line.getStartPoint(), lineUnitVector));
+            const testCurve = new bCurve([{x: 70, y: 250}, {x: 20, y: 110}, {x: 220, y: 60}]);
+            const testRes = testCurve.getLineIntersections(unitLine);
+            expect(testRes.length).toBe(0);
+        });
+
         test("Find Intersections with other bezier curve", ()=>{
             const controlPoints1 = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500,500), y: getRandom(-500, 500)}];
             const controlPoints2 = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];

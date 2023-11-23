@@ -501,7 +501,9 @@ export class bCurve{
         const yRoots = this.solveCubic(yCoefficients[0], yCoefficients[1], yCoefficients[2], yCoefficients[3]);
         yRoots.forEach((root)=>{
             if(root >= 0 && root <= 1){
-                res.push(root);
+                if(line.pointInLine(this.get(root))){
+                    res.push(root);
+                }
             }
         });
 
