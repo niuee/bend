@@ -18,6 +18,13 @@ describe("Basic Line Operation", ()=>{
         expect(testRes.translation.y).toBeCloseTo(-2);
         expect(testRes.rotationAngle).toBeCloseTo(-Math.PI / 4);
     });
+
+    test("Determine if a point lies on the line", ()=>{
+        const line = new Line({x: 2, y: 2}, {x: 7, y: 7});
+        expect(line.pointInLine({x: 5, y: 5})).toBe(true);
+        expect(line.pointInLine({x: 4, y: 5})).toBe(false);
+        expect(line.pointInLine({x: 8, y: 8})).toBe(false);
+    });
 });
 
 function getRandomInt(min: number, max: number) {

@@ -33,6 +33,15 @@ export class Line {
 
         return {translation, rotationAngle};
     }
+
+    pointInLine(point: Point): boolean{
+        const baseVector = PointCal.unitVectorFromA2B(this.startPoint, this.endPoint);
+        const start2PointVector = PointCal.subVector(point, this.startPoint);
+        const length = PointCal.dotProduct(start2PointVector, baseVector);
+        const start2PointUnitVector = PointCal.unitVector(start2PointVector);
+        const errorThreshold = PointCal.distanceBetweenPoints(this.startPoint, this.endPoint) * 0.0001;
+        return length <= PointCal.distanceBetweenPoints(this.startPoint, this.endPoint) && length >= 0 && Math.abs(start2PointUnitVector.x - baseVector.x) < 0.0001 && Math.abs(start2PointUnitVector.y - baseVector.y) < 0.0001;
+    }
 }
 
 export function getLineIntersection(startPoint: Point, endPoint: Point, startPoint2: Point, endPoint2: Point):{
