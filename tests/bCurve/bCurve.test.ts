@@ -340,6 +340,18 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
+        test("Find Intersections between a bezier curve with a circle", ()=>{
+            const testControlPoints = getRandomQuadraticControlPoints(-500, 500);
+            const testCurve = new bCurve(testControlPoints);
+            const circleCenter = getRandomPoint(-500, 500);
+            const radius = getRandom(-300, 300);
+            const testRes = testCurve.getCircleIntersections(circleCenter, radius);
+            testRes.forEach((intersection)=>{
+                expect(PointCal.distanceBetweenPoints(intersection.intersection, circleCenter)).toBeCloseTo(radius);
+            });
+        });
+
+
     });
 
     describe("Cubic Bezier Curve (4 Control Points)", ()=>{
@@ -585,6 +597,17 @@ describe("Basic Operation on Bezier Curve", ()=>{
             const LUT = testCurve.getLUT();
             LUT.forEach((point)=>{
                 expect(PointCal.distanceBetweenPoints(testRes.projection, testMousePosition)).toBeLessThanOrEqual(PointCal.distanceBetweenPoints(point, testMousePosition));
+            });
+        });
+
+        test("Find Intersections between a bezier curve with a circle", ()=>{
+            const testControlPoints = getRandomCubicControlPoints(-500, 500);
+            const testCurve = new bCurve(testControlPoints);
+            const circleCenter = getRandomPoint(-500, 500);
+            const radius = getRandom(-300, 300);
+            const testRes = testCurve.getCircleIntersections(circleCenter, radius);
+            testRes.forEach((intersection)=>{
+                expect(PointCal.distanceBetweenPoints(intersection.intersection, circleCenter)).toBeCloseTo(radius);
             });
         });
 

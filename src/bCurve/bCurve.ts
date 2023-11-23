@@ -601,6 +601,117 @@ export class bCurve{
         return initialRes;
     }
 
+    getCircleIntersections(circleCenter: Point, circleRadius: number): {intersection: Point, tVal: number}[]{
+        const LUT = this.getLUTWithTVal(500);
+        let distanceError = Number.MAX_VALUE;
+        let preliminaryIntersectionIndex = 0;
+        let preliminaryIntersectionPoint: Point = LUT[0].point;
+        let preliminaryIntersectionTVal = LUT[0].tVal;
+        LUT.forEach((curvePoint, index)=>{
+            let curDistanceError = Math.abs(PointCal.distanceBetweenPoints(circleCenter, curvePoint.point));
+            if (curDistanceError < distanceError){
+                distanceError = curDistanceError;
+                preliminaryIntersectionIndex = index;
+            }
+        });
+        const LUTD = LUT.map((curvePoint, index)=>{
+            return {...curvePoint, distance: 0};
+        })
+        distanceError = Number.MAX_VALUE;
+        let start = 0;
+        let count = 0;
+        let indices: number[] = [];
+        while(++count < 25){
+            let i = this.findClosest(circleCenter.x, circleCenter.y, LUTD, circleRadius, 5, LUTD[start - 2]?.distance, LUTD[start - 1]?.distance);
+            if (i < start) break;
+            if (i > 0 && i == start) break;
+            indices.push(i);
+            start = i + 2;
+        }
+        const finalList: {intersection: Point, tVal: number}[] = [];
+        indices.forEach((index)=>{
+            let res = this.refineBinary(this, circleCenter.x, circleCenter.y, LUTD, index, circleRadius);
+            if (res != undefined){
+                finalList.push({intersection: res.point, tVal: res.tVal});
+            }
+        })
+        return finalList;
+    }
+
+    refineBinary(curve: bCurve, x: number, y: number, LUT: {point: Point, tVal: number, distance: number}[], i: number, targetDistance=0, epsilon=0.01) {
+        let q: {point: Point, tVal: number, distance: number} | undefined = LUT[i],
+          count = 1,
+          distance = Number.MAX_SAFE_INTEGER;
+      
+        do {
+          let i1 = i === 0 ? 0 : i - 1,
+              i2 = i === LUT.length - 1 ? LUT.length - 1 : i + 1,
+              t1 = LUT[i1].tVal,
+              t2 = LUT[i2].tVal,
+              lut: {point: Point, tVal: number, distance: number}[] = [],
+              step = (t2 - t1) / 4;
+      
+          if (step < 0.001) break;
+      
+          lut.push(LUT[i1]);
+          for (let j = 1; j <= 3; j++) {
+            let n = curve.get(t1 + j * step);
+            let nDistance = Math.abs(PointCal.distanceBetweenPoints(n, {x: x, y: y}) - targetDistance);
+            if (nDistance < distance) {
+              distance = nDistance;
+              q = {point: n, tVal: t1 + j * step, distance: nDistance};
+              i = j;
+            }
+            lut.push({point: n, tVal: t1 + j * step, distance: nDistance});
+          }
+          lut.push(LUT[i2]);
+      
+          // update the LUT to be our new five point LUT, and run again.
+          LUT = lut;
+      
+          // The "count" test is mostly a safety measure: it will
+          // never kick in, but something that _will_ terminate is
+          // always better than while(true). Never use while(true)
+        } while (count++ < 25);
+      
+        // If we're trying to hit a target, discard the result if
+        // it is not close enough to the target.
+        if (targetDistance && distance > epsilon) {
+          q = undefined;
+        }
+      
+        return q;
+      }
+
+    findClosest(x: number, y: number, LUT: {point: Point, tVal: number, distance: number}[], circleRadius: number, distanceEpsilon = 5, pd2?: number, pd1?: number) {
+        let distance = Number.MAX_SAFE_INTEGER,
+          prevDistance2 = pd2 || distance,
+          prevDistance1 = pd1 || distance,
+          i = -1;
+      
+        for (let index=0, e=LUT.length; index<e; index++){
+          let p = LUT[index].point;
+          LUT[index].distance = Math.abs(PointCal.distanceBetweenPoints({x:x, y:y}, p) - circleRadius);
+          
+          // Realistically, there's only going to be an intersection if
+          // the distance to the circle center is already approximately
+          // the circle's radius.
+          if (prevDistance1 < distanceEpsilon && prevDistance2 > prevDistance1 && prevDistance1 < LUT[index].distance) {
+            i = index - 1;
+            break;
+          }
+      
+          if (LUT[index].distance < distance) {
+            distance = LUT[index].distance;
+          }
+      
+          prevDistance2 = prevDistance1;
+          prevDistance1 = LUT[index].distance;
+        }
+      
+        return i;
+      }
+
     getIntersectionsBetweenCurves(curve: bCurve, curve2: bCurve): {selfT: number, otherT: number}[]{
         const threshold = 0.0001;
         let pairs: {curve1: {curve: bCurve, startTVal: number, endTVal: number}, curve2: {curve: bCurve, startTVal: number, endTVal: number}}[] = [{curve1: {curve: curve, startTVal: 0, endTVal: 1}, curve2: {curve: curve2, startTVal: 0, endTVal: 1}}];
