@@ -139,6 +139,18 @@ export class bCurve{
         return this.compute(tVal);
     }
 
+    public getLUT(steps?: number){
+        if (steps == undefined){
+            steps = 100;
+        }
+        const stepSpan = 1 / steps;
+        const res: Point[] = [];
+        for(let tVal = 0; tVal <= 1; tVal += stepSpan){
+            res.push(this.get(tVal));
+        }
+        return res
+    }
+
     public fullLength(): number{
         return this.lengthAtT(1);
     }
@@ -600,6 +612,8 @@ export class bCurve{
         }
         return false;
     }
+
+    
 
     // A helper function to filter for values in the [0,1] interval:
     accept(t: number) {

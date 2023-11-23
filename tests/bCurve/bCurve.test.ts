@@ -309,6 +309,23 @@ describe("Basic Operation on Bezier Curve", ()=>{
             });
         });
 
+        test("Get Look up table from the bezier curve", ()=>{
+            const steps = getRandomInt(5, 100);
+            const testRes = testBCurve.getLUT(steps);
+            const expectRes = refBCurve.getLUT(steps);
+            expect(testRes.length).toBe(expectRes.length);
+            expectRes.forEach((point, index)=>{
+                expect(testRes[index].x).toBeCloseTo(point.x);
+                expect(testRes[index].y).toBeCloseTo(point.y);
+            });
+        });
+
+        // test("Project Points onto bezier curve", ()=>{
+        //     const testMousePosition = {x: getRandom(-500, 500), y: getRandom(-500, 500)};
+        //     const testRes = testBCurve.getProjection(testMousePosition);
+            
+        // });
+
     });
 
     describe("Cubic Bezier Curve (4 Control Points)", ()=>{
@@ -533,6 +550,17 @@ describe("Basic Operation on Bezier Curve", ()=>{
                 const testPoint2 = testCurve.get(intersection.otherT);
                 expect(testPoint1.x).toBeCloseTo(testPoint2.x);
                 expect(testPoint1.y).toBeCloseTo(testPoint2.y);
+            });
+        });
+
+        test("Get Look up table from the bezier curve", ()=>{
+            const steps = getRandomInt(5, 100);
+            const testRes = testBCurve.getLUT(steps);
+            const expectRes = refBCurve.getLUT(steps);
+            expect(testRes.length).toBe(expectRes.length);
+            expectRes.forEach((point, index)=>{
+                expect(testRes[index].x).toBeCloseTo(point.x);
+                expect(testRes[index].y).toBeCloseTo(point.y);
             });
         });
 
