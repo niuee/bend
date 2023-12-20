@@ -31,5 +31,5 @@ export default [{
     input: "src/index.ts",
     output: [{ file: "build/types.d.ts", format: "es" }],
     plugins: [dts.default()],
-  } 
+} 
 ];
