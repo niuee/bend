@@ -55,18 +55,37 @@ const C = [
     0.0123412297999871995468056670700372915759,
 ];
 
+type ArcLengthLUT = {
+    controlPoints: Point[];
+    arcLengthLUT: number[];
+}
+
 export class bCurve{
 
     private controlPoints: Point[];
     private dControlPoints: Point[] = [];
+    private arcLengthLUT: ArcLengthLUT = {controlPoints: [], arcLengthLUT: []};
+
 
     constructor(controlPoints: Point[]){
         this.controlPoints = controlPoints;
         this.dControlPoints = this.getDerivativeControlPoints(this.controlPoints);
+        this.arcLengthLUT.arcLengthLUT = this.getArcLengthLUT(1000);
+        this.arcLengthLUT.controlPoints = [...this.controlPoints];
     }
 
     public getPointbyPercentage(percentage: number){
-        let points = this.getArcLengthLUT(1000);
+        // this leaves room for optimization
+        let controlPointsChangedSinceLastArcLengthLUT = this.arcLengthLUT.controlPoints.length != this.controlPoints.length;
+        controlPointsChangedSinceLastArcLengthLUT = controlPointsChangedSinceLastArcLengthLUT || this.arcLengthLUT.controlPoints.reduce((prevVal, curVal, index)=>{
+            return prevVal || !PointCal.isEqual(curVal, this.controlPoints[index]);
+        }, false);
+        let points: number[] = [];
+        if (controlPointsChangedSinceLastArcLengthLUT){
+            this.arcLengthLUT.arcLengthLUT = this.getArcLengthLUT(1000);
+            this.arcLengthLUT.controlPoints = [...this.controlPoints];
+        }
+        points = [...this.arcLengthLUT.arcLengthLUT];
         let fullLength = this.fullLength();
         let targetLength = percentage * fullLength;
         let low = 0;
