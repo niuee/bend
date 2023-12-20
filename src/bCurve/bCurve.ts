@@ -65,6 +65,25 @@ export class bCurve{
         this.dControlPoints = this.getDerivativeControlPoints(this.controlPoints);
     }
 
+    public getPointbyPercentage(percentage: number){
+        let points = this.getArcLengthLUT(1000);
+        let fullLength = this.fullLength();
+        let targetLength = percentage * fullLength;
+        let low = 0;
+        let high = points.length - 1;
+        while (low <= high){
+            let mid = Math.floor((low + high) / 2);
+            if (points[mid] == targetLength){
+                return this.get((mid + 1) / points.length);
+            } else if (points[mid] < targetLength){
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return low >= points.length ? this.get(1) : this.get((low + 1) / points.length);
+    }
+
     public getDerivativeControlPoints(controlPoints: Point[]): Point[]{
         const derivativeControlPoints: Point[] = [];
         for(let index = 1; index < controlPoints.length; index++){
@@ -202,9 +221,9 @@ export class bCurve{
         let res = [];
         let tSteps = 1 / steps;
         for(let tVal = 0; tVal <= 1; tVal += tSteps){
-            if (tVal > 1){
-                break;
-            }
+            // if (tVal > 1){
+            //     break;
+            // }
             res.push(this.lengthAtT(tVal));
         }
         return res;
@@ -681,7 +700,7 @@ export class bCurve{
         }
       
         return q;
-      }
+    }
 
     findClosest(x: number, y: number, LUT: {point: Point, tVal: number, distance: number}[], circleRadius: number, distanceEpsilon = 5, pd2?: number, pd1?: number) {
         let distance = Number.MAX_SAFE_INTEGER,
@@ -710,7 +729,7 @@ export class bCurve{
         }
       
         return i;
-      }
+    }
 
     getIntersectionsBetweenCurves(curve: bCurve, curve2: bCurve): {selfT: number, otherT: number}[]{
         const threshold = 0.0001;

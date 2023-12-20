@@ -350,8 +350,6 @@ describe("Basic Operation on Bezier Curve", ()=>{
                 expect(PointCal.distanceBetweenPoints(intersection.intersection, circleCenter)).toBeCloseTo(radius);
             });
         });
-
-
     });
 
     describe("Cubic Bezier Curve (4 Control Points)", ()=>{
