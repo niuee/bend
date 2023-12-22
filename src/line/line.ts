@@ -26,6 +26,10 @@ export class Line {
     projectPoint(point: Point){
         return projectPointOntoLine(point, this.getStartPoint(), this.getEndPoint());
     }
+
+    length(): number{
+        return PointCal.distanceBetweenPoints(this.startPoint, this.endPoint);
+    }
     
     getTranslationRotationToAlginXAxis(){
         const translation = PointCal.subVector({x: 0, y: 0}, this.startPoint);
@@ -41,6 +45,10 @@ export class Line {
         const start2PointUnitVector = PointCal.unitVector(start2PointVector);
         const errorThreshold = PointCal.distanceBetweenPoints(this.startPoint, this.endPoint) * 0.0001;
         return length <= PointCal.distanceBetweenPoints(this.startPoint, this.endPoint) && length >= 0 && Math.abs(start2PointUnitVector.x - baseVector.x) < 0.0001 && Math.abs(start2PointUnitVector.y - baseVector.y) < 0.0001;
+    }
+
+    lerp(ratio: number): Point {
+        return PointCal.linearInterpolation(this.startPoint, this.endPoint, ratio);
     }
 }
 
