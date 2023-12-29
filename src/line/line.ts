@@ -98,23 +98,3 @@ export function projectPointOntoLine(point: Point, lineStartPoint: Point, lineEn
     };
 
 }
-
-export function pointInPolygon(polygonVertices: Point[], interestedPoint: Point){
-    let angleCheck = polygonVertices.map((point, index, array)=>{
-        let endPoint: Point;
-        if (index == polygonVertices.length - 1) {
-            // last one need to wrap to the first point
-            endPoint = array[0];
-        }else {
-            endPoint = array[index + 1];
-        }
-        let baseVector = PointCal.subVector(endPoint, point);
-        let checkVector = PointCal.subVector(interestedPoint, point);
-        return PointCal.angleFromA2B(baseVector, checkVector);
-    });
-    let outOfPolygon = angleCheck.filter((angle)=>{
-        return angle > 0;
-    }).length > 0;
-
-    return !outOfPolygon;
-}
