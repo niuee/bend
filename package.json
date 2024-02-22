@@ -1,5 +1,5 @@
 {
-  "name": "@niuee/bcurve",
+  "name": "ccurve",
   "version": "0.0.1",
   "description": "",
   "main": "./build/cjs/index.js",
@@ -9,8 +9,16 @@
     "build": "rollup -c --bundleConfigAsCjs",
     "test": "jest"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/niuee/CCurve.git"
+  },
+  "author": "niuee",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/niuee/CCurve/issues"
+  },
+  "homepage": "https://github.com/niuee/CCurve#readme",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.3",
