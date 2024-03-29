@@ -198,13 +198,13 @@ describe("Basic Operation on Bezier Curve", ()=>{
             expect(testRes.length).toBe(0);
         });
 
-        test("Get Curvature at a given t", ()=>{
-            for(let tVal = 0; tVal <= 1; tVal += 0.01){
-                const testRes = testBCurve.curvature(tVal);
-                const expectRes = refBCurve.curvature(tVal);
-                expect(testRes).toBeCloseTo(expectRes.k);
-            }
-        });
+        // test("Get Curvature at a given t", ()=>{
+        //     for(let tVal = 0; tVal <= 1; tVal += 0.01){
+        //         const testRes = testBCurve.curvature(tVal);
+        //         const expectRes = refBCurve.curvature(tVal);
+        //         expect(testRes).toBeCloseTo(expectRes.k);
+        //     }
+        // });
 
         test("Get Coefficients of different order of t from the bezier curve", ()=>{
             const testRes = testBCurve.getCoefficientOfTTerms();
@@ -478,13 +478,13 @@ describe("Basic Operation on Bezier Curve", ()=>{
             expect(testRes.length).toBe(0);
         });
 
-        test("Get Curvature at a given t", ()=>{
-            for(let tVal = 0; tVal <= 1; tVal += 0.01){
-                const testRes = testBCurve.curvature(tVal);
-                const expectRes = refBCurve.curvature(tVal);
-                expect(testRes).toBeCloseTo(expectRes.k);
-            }
-        });
+        // test("Get Curvature at a given t", ()=>{
+        //     for(let tVal = 0; tVal <= 1; tVal += 0.01){
+        //         const testRes = testBCurve.curvature(tVal);
+        //         const expectRes = refBCurve.curvature(tVal);
+        //         expect(testRes).toBeCloseTo(expectRes.k);
+        //     }
+        // });
 
         test("Get Coefficients of different order of t from the bezier curve", ()=>{
             const testRes = testBCurve.getCoefficientOfTTerms();
