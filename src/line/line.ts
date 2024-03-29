@@ -1,5 +1,5 @@
 import { PointCal } from "point2point";
-import {Point} from "../bCurve";
+import {Point} from "../b-curve";
 
 
 export class Line {

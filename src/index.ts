@@ -1,5 +1,5 @@
-export * from "./bCurve";
+export * from "./b-curve";
 export * from "./line";
-export * from "./compositeCurve";
+export * from "./composite-curve";
 export * as utils from "./utils";
 export * from "./path";
