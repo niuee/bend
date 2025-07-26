@@ -9,7 +9,11 @@
     "build": "pnpm run rollup && pnpm run move-package",
     "rollup": "rollup -c --bundleConfigAsCjs",
     "move-package": "node ./scripts/move-package.mjs",
-    "test": "jest"
+    "test": "jest",
+    "sync-package-version": "node ./scripts/sync-package-version.mjs",
+    "gen-declaration": "pnpm exec tsc --declaration --emitDeclarationOnly -p prod.tsconfig.json && pnpm exec tsc-alias -p prod.tsconfig.json",
+    "count-lines": "git ls-files ./src | xargs wc -l",
+    "dev": "pnpm exec vite --config vite.config.js"
   },
   "repository": {
     "type": "git",
@@ -34,6 +38,8 @@
     "rollup-plugin-dts": "^5.3.0",
     "ts-jest": "^29.0.5",
     "tslib": "^2.6.0",
-    "typescript": "^5.0.3"
-  }
+    "typescript": "^5.0.3",
+    "vite": "^7.0.5"
+  },
+  "packageManager": "pnpm@9.15.0"
 }

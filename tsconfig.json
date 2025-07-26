@@ -1,19 +1,22 @@
 {
-    "compilerOptions": {
+  "compilerOptions": {
       "target": "es6",
+      "baseUrl": "./",
       "esModuleInterop": true,
       "outDir": "./build",
-      "strict": true,
+      "strict": false,
       "moduleResolution": "node",
-      "sourceMap": true,
+      "paths": {
+          "src": ["src"],
+          "src/*": ["src/*"],
+          "coordinate-conversion": ["src/board-camera/coordinate-conversion"]
+      },
       "resolveJsonModule": true,
-    //   "declaration": true,
-    //   "declarationDir": "./build/types",
       "lib": ["es6", "dom"],
       "typeRoots": ["node_modules/@types"],
       "noEmitOnError": true,
       "noImplicitAny": true
-    },
-    "include": ["src/**/*", "tests/index.test.ts"],
-    "exclude": ["node_modules", "**/*.test.ts", "dist", "build"]
+  },
+  "include": [ "src/**/*", "devserver/**/*", "tests/**/*" ],
+  "exclude": ["node_modules",  "dist", "build"]
 }

@@ -1,10 +1,9 @@
+// rollup.config.js
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
-import dts from "rollup-plugin-dts";
 import terser from "@rollup/plugin-terser";
 import path from 'path';
 const packageJson = require("./package.json");
-
 
 
 const fs = require('fs');
@@ -14,20 +13,14 @@ const plugins = [
     typescript({
       tsconfig: './tsconfig.json',
       declaration: false,
-      // useTsconfigDeclarationDir: true,
+      exclude: ["node_modules", "dist", "build", "devserver/**/*", "tests/**/*"],
     }),
     terser({
       mangle: false,
     }),
 ]
 
-export const getComponentsFolders = (entry) => {
-   const dirs = fs.readdirSync(entry)
-   const dirsWithoutIndex = dirs.filter(name => name !== 'index.ts' && name !== 'utils')
-   return dirsWithoutIndex
-};
-
-export const getComponentsFoldersRecursive = (entry) => {
+const getComponentsFoldersRecursive = (entry) => {
   const finalListOfDirs = [];
   const dirs = fs.readdirSync(entry)
   while (dirs.length !== 0){
@@ -50,7 +43,6 @@ export const getComponentsFoldersRecursive = (entry) => {
 
 console.log(getComponentsFoldersRecursive('./src'));
 
-
 const folderBuilds = getComponentsFoldersRecursive('./src').map((folder) => {
   return {
     input: `src/${folder}/index.ts`,
@@ -60,54 +52,54 @@ const folderBuilds = getComponentsFoldersRecursive('./src').map((folder) => {
       sourcemap: true,
       format: 'esm',
     },
+    // {
+    //   file: `build/${folder}/index.cjs`,
+    //   sourcemap: true,
+    //   format: 'cjs',
+    // }
     ],
     plugins: [
         ...plugins,
-    ]
-  };
-});
-
-
-const types = getComponentsFoldersRecursive('./src').map((folder) => {
-  return {
-    input: `src/${folder}/index.ts`,
-    output: {
-      file: `build/${folder}/index.d.ts`,
-      format: "es",
-    },
-    plugins: [
-      dts.default(),
+    ],
+    external: [
+      'point2point',
+      // Add internal dependencies that should be external
+      /^\.\.\/.*/, // This will make all parent directory imports external
+      // /^\.\/.*/,   // This will make all sibling directory imports external
     ],
   };
-
 });
 
 export default [
   ...folderBuilds,
+  // the overarching package build
   {
     input: 'src/index.ts',
     output: [{
       file: packageJson.main,
       format: 'cjs',
+      name: 'bend',
       sourcemap: true,
-    },  
+    },
     {
       file: packageJson.module,
       format: 'esm',
+      name: 'bend',
       sourcemap: true
     }
     ],
     plugins: [
       resolve(),
       typescript({
-        tsconfig: './tsconfig.json',
+        tsconfig: "./tsconfig.json",
+        exclude: ["node_modules", "dist", "build", "devserver/**/*", "tests/**/*"],
         declaration: true,
-        declarationDir: "./build",
       }),
       terser({
-        mangle: false,
+        mangle: true,
       }),
     ],
+    external: ['point2point'],
   },
   {
     // distribution for direct browser usage
@@ -116,26 +108,17 @@ export default [
     {
       file: 'dist/bend.js',
       format: 'esm',
+      name: 'bend',
       sourcemap: true,
     },
-    {
-      file: 'build/umd/index.js',
-      format: 'umd',
-      name: "Bend",
-      sourcemap: true
-    },
-    {
-      file: 'build/iife/index.js',
-      format: 'iife',
-      name: "Bend",
-      sourcemap: true
-    }
     ],
     plugins: [
       resolve(),
       typescript({
         tsconfig: './tsconfig.json',
         declaration: false,
+        exclude: ["node_modules", "dist", "build", "devserver/**/*", "tests/**/*"],
+        outDir: 'dist',
       }),
       terser({
         mangle: false,

@@ -1,25 +1,25 @@
 import { Bezier } from "bezier-js";
 import { PointCal } from "point2point";
-import { bCurve, Point, TValOutofBoundError } from "../../src/b-curve";
+import { BCurve, Point, TValOutofBoundError, solveCubic } from "../../src/b-curve/BCurve";
 import { Line } from "../../src/line";
 
 describe("Basic Operation on Bezier Curve", ()=>{
 
     test("Initializing bezier curve with 3 control points", ()=>{
         const controlPoints = [{x: 10, y: 20}, {x: 30, y: 50}, {x:20 ,y: 30}];
-        const testBCurve = new bCurve(controlPoints);
+        const testBCurve = new BCurve(controlPoints);
         expect(testBCurve.getControlPoints().sort()).toEqual(controlPoints.sort());
     });
 
     test("Initializing bezier curve with 4 control points", ()=>{
         const controlPoints = [{x: 10, y: 20}, {x: 30, y: 50}, {x:20 ,y: 30}, {x: 70, y: 30}];
-        const testBCurve = new bCurve(controlPoints);
+        const testBCurve = new BCurve(controlPoints);
         expect(testBCurve.getControlPoints().sort()).toEqual(controlPoints.sort());
     });
 
     describe("Quadratic Bezier Curve (3 Control Points)", ()=>{
         const controlPoints: Point[] = [];
-        let testBCurve: bCurve;
+        let testBCurve: BCurve;
         let refBCurve: Bezier;
 
         beforeEach(() => {
@@ -27,7 +27,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
             for(let index = 0; index < 3; index++){
                 controlPoints.push({x: getRandom(-500, 500), y: getRandom(-500, 500)});
             }
-            testBCurve = new bCurve(controlPoints);
+            testBCurve = new BCurve(controlPoints);
             refBCurve = new Bezier(controlPoints);
         });
 
@@ -81,7 +81,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Get arc length", ()=>{
             const expectRes = refBCurve.length();
-            const testRes = testBCurve.fullLength();
+            const testRes = testBCurve.fullLength;
             expect(testRes).toBeCloseTo(expectRes);
         });
 
@@ -149,7 +149,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
         test("Find arcs in bezier curve", ()=>{
             const errorThreshold = 0.5;
             const testRes = testBCurve.findArcs(errorThreshold);
-            const inflectedCurve = new bCurve([{x: 52, y: 235}, {x: 56, y:118}, {x: 204, y:222}, {x: 179, y: 107}]);
+            const inflectedCurve = new BCurve([{x: 52, y: 235}, {x: 56, y:118}, {x: 204, y:222}, {x: 179, y: 107}]);
             const inflectedRes = inflectedCurve.findArcs(errorThreshold);
 
             let prevT = 0;
@@ -189,7 +189,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
             const controlPoint2 = {x: 200, y: 0};
             const controlPoint3 = {x: 300, y: 0};
             const controlPoint4 = {x: 400, y: 0};
-            const straightCurve = new bCurve([controlPoint1, controlPoint2, controlPoint3, controlPoint4]);
+            const straightCurve = new BCurve([controlPoint1, controlPoint2, controlPoint3, controlPoint4]);
             const testRes = straightCurve.findArcs(0.01);
             expect(testRes.length).toBe(0);
         });
@@ -234,7 +234,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
             const b = getRandom(-500, 500);
             const c = getRandom(-500, 500);
             const d = getRandom(-500, 500);
-            const testRes = testBCurve.solveCubic(a, b, c, d);
+            const testRes = solveCubic(a, b, c, d);
             const refRes = solveCubic(a, b, c, d);
             expect(testRes).toEqual(refRes);
         });
@@ -255,7 +255,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
         });
 
         test("Find Axis Aligned Bounding Box of the bezier curve", ()=>{
-            const boundingBox = testBCurve.getAABB();
+            const boundingBox = testBCurve.AABB;
             const refBoundingBox = refBCurve.bbox();
             expect(boundingBox.min.x).toBeCloseTo(refBoundingBox.x.min);
             expect(boundingBox.min.y).toBeCloseTo(refBoundingBox.y.min);
@@ -265,11 +265,11 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Align Bezier Curve with the X axis", ()=>{
             const testControlPoints = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
-            const alignRefBCurve = new bCurve(testControlPoints);
+            const alignRefBCurve = new BCurve(testControlPoints);
             const testRes = alignRefBCurve.getControlPointsAlignedWithXAxis();
             expect(testRes.length).toBe(3);
             expect(testRes[testRes.length - 1].y).toBeCloseTo(0);
-            const alignTestBCurve = new bCurve(testRes);
+            const alignTestBCurve = new BCurve(testRes);
             for(let tVal = 0; tVal <= 1; tVal += 0.01){
                 const refPosition = alignRefBCurve.compute(tVal);
                 const testPosition = alignTestBCurve.compute(tVal);
@@ -281,7 +281,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Find Intersection(s) between a line and a bezier curve", ()=>{
             const line = new Line({x: 15, y: 250}, {x: 220, y: 20});
-            const testCurve = new bCurve([{x: 70, y: 250}, {x: 20, y: 110}, {x: 220, y: 60}]);
+            const testCurve = new BCurve([{x: 70, y: 250}, {x: 20, y: 110}, {x: 220, y: 60}]);
             const testRes = testCurve.getLineIntersections(line);
             expect(testRes.length).toBe(2);
             testRes.sort();
@@ -295,7 +295,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
             const line = new Line({x: 15, y: 250}, {x: 220, y: 20});
             const lineUnitVector = PointCal.unitVectorFromA2B(line.getStartPoint(), line.getEndPoint());
             const unitLine = new Line(line.getStartPoint(), PointCal.addVector(line.getStartPoint(), lineUnitVector));
-            const testCurve = new bCurve([{x: 70, y: 250}, {x: 20, y: 110}, {x: 220, y: 60}]);
+            const testCurve = new BCurve([{x: 70, y: 250}, {x: 20, y: 110}, {x: 220, y: 60}]);
             const testRes = testCurve.getLineIntersections(unitLine);
             expect(testRes.length).toBe(0);
         });
@@ -303,8 +303,8 @@ describe("Basic Operation on Bezier Curve", ()=>{
         test("Find Intersections with other bezier curve", ()=>{
             const controlPoints1 = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500,500), y: getRandom(-500, 500)}];
             const controlPoints2 = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
-            const curve1 = new bCurve(controlPoints1);
-            const curve2 = new bCurve(controlPoints2);
+            const curve1 = new BCurve(controlPoints1);
+            const curve2 = new BCurve(controlPoints2);
             const testRes = curve1.getCurveIntersections(curve2);
             testRes.forEach((intersection)=>{
                 const testPoint1 = curve1.get(intersection.selfT);
@@ -327,7 +327,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Project Points onto bezier curve", ()=>{
             const testControlPoints = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
-            const testCurve = new bCurve(testControlPoints);
+            const testCurve = new BCurve(testControlPoints);
             const testMousePosition = {x: getRandom(-500, 500), y: getRandom(-500, 500)};
             const testRes = testCurve.getProjection(testMousePosition);
             const LUT = testCurve.getLUT();
@@ -338,7 +338,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Find Intersections between a bezier curve with a circle", ()=>{
             const testControlPoints = getRandomQuadraticControlPoints(-500, 500);
-            const testCurve = new bCurve(testControlPoints);
+            const testCurve = new BCurve(testControlPoints);
             const circleCenter = getRandomPoint(-500, 500);
             const radius = getRandom(-300, 300);
             const testRes = testCurve.getCircleIntersections(circleCenter, radius);
@@ -350,14 +350,14 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
     describe("Cubic Bezier Curve (4 Control Points)", ()=>{
         const controlPoints: Point[] = [];
-        let testBCurve: bCurve;
+        let testBCurve: BCurve;
         let refBCurve: Bezier;
         beforeEach(() => {
             controlPoints.length =  0;
             for(let index = 0; index < 4; index++){
                 controlPoints.push({x: getRandom(-500, 500), y: getRandom(-500, 500)});
             }
-            testBCurve = new bCurve(controlPoints);
+            testBCurve = new BCurve(controlPoints);
             refBCurve = new Bezier(controlPoints);
         });
 
@@ -407,7 +407,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Get arc length", ()=>{
             const expectRes = refBCurve.length();
-            const testRes = testBCurve.fullLength();
+            const testRes = testBCurve.fullLength;
             expect(testRes).toBeCloseTo(expectRes);
         });
 
@@ -469,7 +469,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
             const controlPoint1 = {x: 100, y: 0};
             const controlPoint2 = {x: 200, y: 0};
             const controlPoint3 = {x: 300, y: 0};
-            const straightCurve = new bCurve([controlPoint1, controlPoint2, controlPoint3]);
+            const straightCurve = new BCurve([controlPoint1, controlPoint2, controlPoint3]);
             const testRes = straightCurve.findArcs(0.01);
             expect(testRes.length).toBe(0);
         });
@@ -518,11 +518,11 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Align Bezier Curve with the X axis", ()=>{
             const testControlPoints = [{x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}, {x: getRandom(-500, 500), y: getRandom(-500, 500)}];
-            const alignRefBCurve = new bCurve(testControlPoints);
+            const alignRefBCurve = new BCurve(testControlPoints);
             const testRes = alignRefBCurve.getControlPointsAlignedWithXAxis();
             expect(testRes.length).toBe(4);
             expect(testRes[testRes.length - 1].y).toBeCloseTo(0);
-            const alignTestBCurve = new bCurve(testRes);
+            const alignTestBCurve = new BCurve(testRes);
             for(let tVal = 0; tVal <= 1; tVal += 0.01){
                 const refPosition = alignRefBCurve.compute(tVal);
                 const testPosition = alignTestBCurve.compute(tVal);
@@ -549,7 +549,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Find Intersection(s) between a line and a bezier curve", ()=>{
             const line = new Line({x: 25, y: 260}, {x: 240, y: 55});
-            const testCurve = new bCurve([{x: 110, y: 150}, {x: 25, y: 190}, {x: 210, y: 250}, {x: 210, y: 30}]);
+            const testCurve = new BCurve([{x: 110, y: 150}, {x: 25, y: 190}, {x: 210, y: 250}, {x: 210, y: 30}]);
             const testRes = testCurve.getLineIntersections(line);
             expect(testRes.length).toBe(2);
             testRes.sort();
@@ -561,7 +561,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Find self intersections", ()=>{
             const controlPoints = [{x: 176, y: 135}, {x: 45, y:235}, {x: 220, y: 235}, {x: 98, y: 127}];
-            const testCurve = new bCurve(controlPoints);
+            const testCurve = new BCurve(controlPoints);
             const testRes = testCurve.getSelfIntersections();
             expect(testRes.length).toBe(1);
             testRes.forEach((intersection)=>{
@@ -585,7 +585,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Project Points onto bezier curve", ()=>{
             const testControlPoints = getRandomCubicControlPoints(-500, 500);
-            const testCurve = new bCurve(testControlPoints);
+            const testCurve = new BCurve(testControlPoints);
             const testMousePosition = getRandomPoint(-500, 500);
             const testRes = testCurve.getProjection(testMousePosition);
             const LUT = testCurve.getLUT();
@@ -596,7 +596,7 @@ describe("Basic Operation on Bezier Curve", ()=>{
 
         test("Find Intersections between a bezier curve with a circle", ()=>{
             const testControlPoints = getRandomCubicControlPoints(-500, 500);
-            const testCurve = new bCurve(testControlPoints);
+            const testCurve = new BCurve(testControlPoints);
             const circleCenter = getRandomPoint(-500, 500);
             const radius = getRandom(-300, 300);
             const testRes = testCurve.getCircleIntersections(circleCenter, radius);
@@ -606,9 +606,80 @@ describe("Basic Operation on Bezier Curve", ()=>{
         });
 
     })
-
 });
 
+describe("Advanced Operation on Bezier Curve", ()=>{
+    test("Given a t value and a length, find the t value that is the given length away from the given t value", ()=>{
+        // Create a curved Bezier curve: control points form a curve
+        // Start at (0,0), control at (50,100), end at (100,0)
+        // This creates a curved path where we can test arc length calculations
+        const testCurve = new BCurve([{x: 0, y: 0}, {x: 50, y: 100}, {x: 100, y: 0}]);
+        const tVal = 0.5; // Start at middle of curve
+        const length = 30; // Advance 30 units along the curve
+        
+        const testRes = testCurve.advanceAtTWithLength(tVal, length);
+        
+        // Verify we get a withinCurve result
+        expect(testRes.type).toBe("withinCurve");
+        if(testRes.type === "withinCurve"){
+            // The new t value should be greater than 0.5 since we're advancing forward
+            expect(testRes.tVal).toBeGreaterThan(0.5);
+            expect(testRes.tVal).toBeLessThanOrEqual(1);
+            
+            // The point should be further along the curve
+            expect(testRes.point.x).toBeGreaterThan(testCurve.get(0.5).x);
+            
+            // Verify the arc length from original t to new t is approximately the requested length
+            const originalLength = testCurve.lengthAtT(tVal);
+            const newLength = testCurve.lengthAtT(testRes.tVal);
+            const actualAdvance = newLength - originalLength;
+            expect(actualAdvance).toBeCloseTo(length, 0);
+        }
+    });
+
+    test("Advance beyond curve length should return afterCurve type", ()=>{
+        const testCurve = new BCurve([{x: 0, y: 0}, {x: 50, y: 100}, {x: 100, y: 0}]);
+        const tVal = 0.8; // Start near end
+        const length = 100; // Try to advance 100 units (beyond curve length)
+        
+        const testRes = testCurve.advanceAtTWithLength(tVal, length);
+        
+        expect(testRes.type).toBe("afterCurve");
+        if(testRes.type === "afterCurve"){
+            // Should have some remaining length
+            expect(testRes.remainLenth).toBeGreaterThan(0);
+        }
+    });
+
+    test("Advance backward before curve start should return beforeCurve type", ()=>{
+        const testCurve = new BCurve([{x: 0, y: 0}, {x: 50, y: 100}, {x: 100, y: 0}]);
+        const tVal = 0.2; // Start at 20% of curve
+        const length = -50; // Try to go backward 50 units
+        
+        const testRes = testCurve.advanceAtTWithLength(tVal, length);
+        
+        expect(testRes.type).toBe("beforeCurve");
+        if(testRes.type === "beforeCurve"){
+            // Should have some remaining length
+            expect(testRes.remainLength).toBeGreaterThan(0);
+        }
+    });
+
+    test("Advance exact curve length from start should reach end", ()=>{
+        const testCurve = new BCurve([{x: 0, y: 0}, {x: 50, y: 100}, {x: 100, y: 0}]);
+        const tVal = 0; // Start at beginning
+        const length = testCurve.fullLength; // Advance full length
+        
+        const testRes = testCurve.advanceAtTWithLength(tVal, length);
+        
+        expect(testRes.type).toBe("withinCurve");
+        if(testRes.type === "withinCurve"){
+            expect(testRes.tVal).toBeCloseTo(1, 2);
+            expect(testRes.point.x).toBeCloseTo(100, 1);
+            expect(testRes.point.y).toBeCloseTo(0, 1);
+        }
+    });
+});
 
 function getRandomInt(min: number, max: number) {
     min = Math.ceil(min);
@@ -641,62 +712,4 @@ function getRandomControlPoints(min: number, max: number, num?: number): Point[]
         res.push({x: getRandom(min, max), y: getRandom(min, max)});
     }
     return res;
-}
-
-function cuberoot(x: number) {
-    var y = Math.pow(Math.abs(x), 1/3);
-    return x < 0 ? -y : y;
-}
-
-function solveCubic(a: number, b: number, c: number, d: number) {
-    if (Math.abs(a) < 1e-8) { // Quadratic case, ax^2+bx+c=0
-        a = b; b = c; c = d;
-        if (Math.abs(a) < 1e-8) { // Linear case, ax+b=0
-            a = b; b = c;
-            if (Math.abs(a) < 1e-8) // Degenerate case
-                return [];
-            return [-b/a];
-        }
-
-        let D = b*b - 4*a*c;
-        if (Math.abs(D) < 1e-8)
-            return [-b/(2*a)];
-        else if (D > 0)
-            return [(-b+Math.sqrt(D))/(2*a), (-b-Math.sqrt(D))/(2*a)];
-        return [];
-    }
-
-    // Convert to depressed cubic t^3+pt+q = 0 (subst x = t - b/3a)
-    let p = (3*a*c - b*b)/(3*a*a);
-    let q = (2*b*b*b - 9*a*b*c + 27*a*a*d)/(27*a*a*a);
-    let roots: number[];
-
-    if (Math.abs(p) < 1e-8) { // p = 0 -> t^3 = -q -> t = -q^1/3
-        roots = [cuberoot(-q)];
-    } else if (Math.abs(q) < 1e-8) { // q = 0 -> t^3 + pt = 0 -> t(t^2+p)=0
-        roots = [0].concat(p < 0 ? [Math.sqrt(-p), -Math.sqrt(-p)] : []);
-    } else {
-        let D = q*q/4 + p*p*p/27;
-        if (Math.abs(D) < 1e-8) {       // D = 0 -> two roots
-            roots = [-1.5*q/p, 3*q/p];
-        } else if (D > 0) {             // Only one real root
-            let u = cuberoot(-q/2 - Math.sqrt(D));
-            let v = cuberoot(-q/2 + Math.sqrt(D));
-            //console.log("Complext Root 1 real:", -(u+v)/2.0 - a / 3.0, "imaginary:", Math.sqrt(3) / 2.0 * (v - u));
-            //console.log("Complext Root 2 real:", -(u+v)/2.0 - a / 3.0, "imaginary:",-1 * Math.sqrt(3) / 2.0 * (v - u));
-
-            roots = [u - p/(3*u)];
-        } else {                        // D < 0, three roots, but needs to use complex numbers/trigonometric solution
-            let u = 2*Math.sqrt(-p/3);
-            let t = Math.acos(3*q/p/u)/3;  // D < 0 implies p < 0 and acos argument in [-1..1]
-            let k = 2*Math.PI/3;
-            roots = [u*Math.cos(t), u*Math.cos(t-k), u*Math.cos(t-2*k)];
-        }
-    }
-
-    // Convert back from depressed cubic
-    for (let i = 0; i < roots.length; i++)
-        roots[i] -= b/(3*a);
-
-    return roots;
 }
